@@ -1,0 +1,322 @@
+
+/**
+ * Class with methods to implement the basic arithmetic operations by operating
+ * on bit fields.
+ *
+ * This is the skeleton code from COMP2691 Assignment.
+ *Computer Org DU
+ */
+public class BinaryCalculator {
+	public static BitField add(BitField a, BitField b) {
+		if (null == a || null == b || a.size() != b.size()) {
+			throw new IllegalArgumentException(
+					"BinaryCalculator.add(a,b): a and b cannot be null and must be the same length.");
+		} else {
+			// carry = boolean value that starts as false and becomes true if A and B = true
+			boolean carry = false;
+			// return value BitField
+			BitField c = new BitField(a.size());
+			for (int i = 0; i < a.size(); i++) {
+				// Boolean value to determine whether to add 1 more to i+1
+
+				// Binary Value for BitField A
+				boolean aValue = a.get(i);
+				// Binary Value for BitField B
+				boolean bValue = b.get(i);
+				// new Bitfield to compare a and b
+
+				// Compares if aValue = 1 and bValue = 1 then make the value 0 for c and make
+				// the next
+				// value 1 from carry
+
+				// Case 0
+				if (carry == false && aValue == true && bValue == true) {
+
+					c.setFalse(i);
+					carry = true;
+					
+				}
+
+				// multiple else If statements that check each single case where carry is true,
+				// A is true, B is true etc.
+
+				// Case 1
+				else if (carry == true && aValue == false && bValue == true) {
+
+					c.setFalse(i);
+
+					carry = true;
+					// Case 2
+				} else if (carry == true && aValue == true && bValue == false) {
+
+					c.setFalse(i);
+
+					carry = true;
+					// Case 3
+				} else if (carry == true && aValue == false && bValue == false) {
+
+					c.setTrue(i);
+
+					carry = false;
+
+					// Case 4
+				} else if (carry == true && aValue == true && bValue == true) {
+
+					c.set(i, true);
+
+					carry = true;
+				}
+				// Case 5
+				else if (carry == false && aValue == false && bValue == false) {
+
+					c.setFalse(i);
+
+					carry = false;
+					// Case 6
+				} else if (carry == false && aValue == true && bValue == false) {
+
+					c.setTrue(i);
+
+					carry = false;
+					// case 7
+				} else if (carry == false && aValue == false && bValue == true) {
+
+					c.setTrue(i);
+
+					carry = false;
+
+				}
+
+			}
+			// return the return bitfield C
+			return c;
+		}
+	}
+
+	public static BitField subtract(BitField a, BitField b) {
+		BitField ONE = new BitField(b.size());
+		ONE.set(0, true);
+		if (null == a || null == b || a.size() != b.size()) {
+			throw new IllegalArgumentException(
+					"BinaryCalculator.add(a,b): a and b cannot be null and must be the same length.");
+
+			// set the values of b to 2s complement and add 1 then add with a
+
+		} else {
+
+			// twos complement then add to A
+			b = BinaryCalculator.TwoComplement(b);
+			a = BinaryCalculator.add(a, b);
+
+		}
+		// return a
+		return a;
+	}
+
+	public static BitField multiply(BitField a, BitField b) {
+		if (null == a || null == b || a.size() != b.size()) {
+			throw new IllegalArgumentException(
+					"BinaryCalculator.add(a,b): a and b cannot be null and must be the same length.");
+		} else {
+
+			BitField c = new BitField(a.size());
+
+			BitField ZERO = new BitField(b.size());
+			ZERO.setAllFalse();
+
+			if (a.equals(ZERO) || b.equals(ZERO)) {
+				return c;
+			}
+
+			// If both numbers are negative return a positive value
+			else if (a.getMSB() == true && b.getMSB() == true) {
+				a = BinaryCalculator.TwoComplement(a);
+				b = BinaryCalculator.TwoComplement(b);
+				for (int i = 0; i < a.size(); i++) {
+
+					if (b.get(0) == true) {
+						c = BinaryCalculator.add(c, a);
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					} else {
+
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					}
+
+				}
+
+			}
+
+			// If A is negative but B is positive Return a negative number
+			else if (a.getMSB() == false && b.getMSB() == true) {
+
+				b = BinaryCalculator.TwoComplement(b);
+
+				for (int i = 0; i < a.size(); i++) {
+
+					if (b.get(0) == true) {
+						c = BinaryCalculator.add(c, a);
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					} else {
+
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					}
+
+				}
+
+				c = BinaryCalculator.TwoComplement(c);
+				// If A is positive but B is negative Return a negative number
+			} else if (a.getMSB() == true && b.getMSB() == false) {
+
+				a = BinaryCalculator.TwoComplement(a);
+
+				for (int i = 0; i < a.size(); i++) {
+
+					if (b.get(0) == true) {
+						c = BinaryCalculator.add(c, a);
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					} else {
+
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					}
+
+				}
+
+				c = BinaryCalculator.TwoComplement(c);
+				// If A is positive and B is positive return a positive number
+			} else if (a.getMSB() == false && b.getMSB() == false) {
+
+				for (int i = 0; i < a.size(); i++) {
+
+					if (b.get(0) == true) {
+						c = BinaryCalculator.add(c, a);
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					} else {
+
+						a = BinaryCalculator.leftShift(a);
+						b = BinaryCalculator.rightShift(b);
+					}
+
+				}
+
+			}
+
+			return c;
+
+		}
+
+	}
+
+	
+
+	// Helper Method to get the Twos complement of a BitField
+	public static BitField TwoComplement(BitField a) {
+		BitField ONE = new BitField(a.size());
+		ONE.set(0, true);
+		for (int i = 0; i < a.size(); i++) {
+			// Binary Value for BitField A
+
+			// Binary Value for BitField B
+			boolean bValue = a.get(i);
+
+			if (bValue == false) {
+				a.setTrue(i);
+			} else {
+				a.setFalse(i);
+			}
+
+		}
+		// twos complement then add one
+		a = BinaryCalculator.add(a, ONE);
+
+		return a;
+	}
+
+	// Helper Method
+	// shifts the bitfield a once to the left
+	public static BitField leftShift(BitField a) {
+
+		for (int i = a.size() - 1; i > 0; i--) {
+
+			a.set(i, a.get(i - 1));
+
+		}
+		a.set(0, false);
+		return a;
+
+	}
+
+	// Helper Method
+	// shifts the bitfield a once to the right
+	public static BitField rightShift(BitField a) {
+
+		for (int i = 0; i < a.size() - 1; i++) {
+
+			a.set(i, a.get(i + 1));
+
+		}
+		a.set(a.size() - 1, false);
+		return a;
+
+	}
+
+	// CANNOT USE!!!! ONLY THESE ONLY FOR DEBUGGING
+	// Helper Method to Shift the Bit a given number of times to the left
+	public static BitField LSB(BitField a, int count) {
+
+		if (a.getMSB() == true) {
+
+			// CANNOT USE !!!! ONLY THESE ONLY FOR DEBUGGING
+			BinaryCalculator.TwoComplement(a);
+			System.out.println(a.toString());
+			int number = a.toIntSigned();
+			number = number << count;
+			String s = String.valueOf(number);
+			System.out.println(s);
+			BitField newA = new BitField(a.size(), s);
+			return newA;
+
+		} else {
+			int number = a.toIntSigned();
+			System.out.println(a.toString());
+			number = number << count;
+			String s = String.valueOf(number);
+			System.out.println(s);
+			BitField newA = new BitField(a.size(), s);
+			return newA;
+
+		}
+	}
+
+	// CANNOT USE!!!! ONLY THESE ONLY FOR DEBUGGING
+	// Helper Method to Shift the Bit a given number of times to the right
+	public static BitField RSB(BitField a, int count) {
+		if (a.getMSB() == true) {
+			BinaryCalculator.TwoComplement(a);
+			System.out.println(a.toString());
+			int number = a.toIntSigned();
+			number = number >> count;
+			String s = String.valueOf(number);
+			System.out.println(s);
+			BitField newA = new BitField(a.size(), s);
+			return newA;
+
+		} else {
+			int number = a.toIntSigned();
+			System.out.println(a.toString());
+			number = number >> count;
+			String s = String.valueOf(number);
+			System.out.println(s);
+			BitField newA = new BitField(a.size(), s);
+			return newA;
+
+		}
+
+	}
+}
